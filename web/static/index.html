@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Media Source Extensions Live Demo</title>
+    <link rel="author" href="//chris.hiszpanski.name" />
+    <link rel="license" href="//www.gnu.org/licenses/agpl-3.0.html" />
+    <link rel="stylesheet" href="demo.css" />
+    <script src="demo.js"></script>
+  </head>
+  <body>
+    <h1>Media Source Extensions Live Demo</h1>
+
+    <p>
+      Copyright 2020
+      <a href="//chris.hiszpanski.name">Chris Hiszpanski</a>
+    </p>
+
+    <p>
+      This is a demo of low-latency video streaming using the
+      <a href="//w3c.github.io/media-source/">Media Source Extensions
+      API</a>. The API is supported by all major browsers, with the
+      notable exception of Safari on most iOS devices. The API is
+      supported by Safari on iPad devices with iOS 13 or newer.
+    </p>
+
+    <p>
+      The server receives a H.264 Network Abstraction Layer (NAL) unit
+      byte-stream and wraps the NAL units within MPEG-4 ISO BMFF
+      (ISO/IEC 14496-12) compliant boxes.
+    </p>
+
+    <video autoplay controls muted></video>
+  </body>
+</html>
