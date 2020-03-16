@@ -1,4 +1,4 @@
-# msedemo
+# MicroMSE
 
 This is a demo of low-latency video streaming using the [Media Source Extensions API](//developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API">Media Source Extensions). Note that as of February 2020, Safari on iOS devices does not support this API (excluding iOS 13 on iPad devices, which do support the API).
 

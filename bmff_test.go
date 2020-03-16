@@ -1,17 +1,37 @@
 package main
 
 import (
+	"bytes"
+	"io/ioutil"
 	"os"
 	"testing"
 )
 
 func TestWriteFTYP(t *testing.T) {
-	f, err := os.Create("test.mp4")
+	dst, err := os.Create("testdata/acai.mp4")
 	if nil != err {
 		t.Error(err)
 	}
-	defer f.Close()
+	defer dst.Close()
 
-	writeFTYP(f)
-	writeMOOV(f, 1280, 720)
+	writeFTYP(dst)
+	writeMOOV(dst, 1280, 720)
+
+	src, err := ioutil.ReadFile("testdata/acai.264")
+	if nil != err {
+		t.Error(err)
+	}
+
+	nals := bytes.Split(src, []byte{0, 0, 0, 1})
+
+	n := 1
+	for _, nal := range nals {
+		if len(nal) > 0 {
+			if nal[0]&0x1f < 6 {
+				writeMOOF(dst, n, nal)
+				writeMDAT(dst, nal)
+				n += 1
+			}
+		}
+	}
 }
