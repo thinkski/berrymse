@@ -1,4 +1,4 @@
-# MicroMSE
+# μMSE
 
 Demonstration of low-latency live streaming via the [Media Source Extensions API](//developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API). Note that as of March 2020, Safari on iOS devices does not support this API (excluding iOS 13 on iPad devices, which do support the API).
 
