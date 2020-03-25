@@ -20,19 +20,11 @@ window.onload = function() {
     ws = new WebSocket("ws://" + location.hostname + (location.port ? ":"+location.port : "" ) + "/websocket");
     ws.binaryType = "arraybuffer";
 
-    // opened websocket to remote. request initial file segment.
-    ws.onopen = function(event) {
-      ws.send("please send media segment")
-    }
-
     // The six hexadecimal digit suffix after avc1 is the H.264
     // profile, flags, and level (respectively, one byte each). See
     // ITU-T H.264 specification for details.
-    let mime = 'video/mp4; codecs="avc1.4D4028, mp4a.40.2"';
+    let mime = 'video/mp4; codecs="avc1.640028, mp4a.40.2"';
     let sourceBuffer = mediaSource.addSourceBuffer(mime);
-    sourceBuffer.addEventListener('updateend', function(e) {
-      ws.send("please send media segment");
-    });
 
     // received file or media segment
     ws.onmessage = function(event) {
