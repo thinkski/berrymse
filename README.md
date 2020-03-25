@@ -6,9 +6,11 @@ Note: As of March 2020, Safari on iOS devices still does not support this API (e
 
 ## Overview
 
-The server receives a H.264 Network Abstraction Layer (NAL) unit byte-stream
-and wraps the NAL units within MPEG-4 ISO BMFF (ISO/IEC 14496-12) compliant
-boxes.
+H.264 Network Abstraction Layer (NAL) units are read from `/dev/video0`, a
+Video4Linux2 compatible camera interface. Each unit corresponds to one frame.
+Frames are packaged into MPEG-4 ISO BMFF (ISO/IEC 14496-12) compliant boxes
+and sent via a websocket to the browser client. The browser client appends
+each received buffer to the media source for playback.
 
 ## Quickstart
 
