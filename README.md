@@ -13,7 +13,9 @@ boxes.
 ## Quickstart
 
 This demo requires a Raspberry Pi with Camera Module (USB Video Class devices
-not currently supported).
+not currently supported). As it uses the Video4Linux2 interface to access the
+camera, the Broadcom v4l2 driver must be installed and the camera must be
+enabled in `/boot/config.txt`.
 
 To build:
 
