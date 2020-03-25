@@ -17,6 +17,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -25,6 +26,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/thinkski/go-v4l2"
 )
 
 // Command line flag parameters
@@ -62,6 +64,8 @@ type client struct {
 	hub   *hub
 	conn  *websocket.Conn // Websocket connection
 	frags chan []byte     // Buffered channel of outbound MP4 fragments
+	n     int             // Frame number
+	lock  bool            // Received i-frame?
 }
 
 // hub maintains a set of active clients and broadcasts video to clients
@@ -90,6 +94,11 @@ func (h *hub) run() {
 		case c := <-h.register:
 			h.clients[c] = true
 
+			var frag bytes.Buffer
+			writeFTYP(&frag)
+			writeMOOV(&frag, 1280, 720)
+			c.frags <- frag.Bytes()
+
 		// Unregister request
 		case c := <-h.unregister:
 			if _, ok := h.clients[c]; ok {
@@ -100,16 +109,31 @@ func (h *hub) run() {
 		// New NAL from source
 		case nal := <-h.nals:
 			for c := range h.clients {
-				// TODO Convert NAL unit into MP4 fragment
 
-				select {
-				// Encode NAL unit into MP4 fragment
-				case c.frags <- frag:
+				// Convert NAL unit into MP4 fragment
+				var frag bytes.Buffer
+				nal = bytes.TrimPrefix(nal, []byte{0, 0, 0, 1})
 
-				// Buffered channel full. Drop client.
-				default:
-					close(c.frags)
-					delete(h.clients, c)
+				// I-frame or P-frame or B-frame
+				if nal[0]&0x1f < 6 {
+					if nal[0]&0x1f == 5 {
+						c.lock = true
+					}
+					if nal[0]&0x1f == 5 || (nal[0]&0x1f != 5 && c.lock) {
+						writeMOOF(&frag, c.n, nal)
+						writeMDAT(&frag, nal)
+						c.n++
+
+						select {
+						// Write MP4 fragment
+						case c.frags <- frag.Bytes():
+
+						// Buffered channel full. Drop client.
+						default:
+							close(c.frags)
+							delete(h.clients, c)
+						}
+					}
 				}
 			}
 		}
@@ -117,9 +141,51 @@ func (h *hub) run() {
 }
 
 type source struct {
+	device *v4l2.Device
+	hub    *hub
 }
 
-func newSource() *source {
+func newSource(h *hub) *source {
+	// Open device
+	dev, err := v4l2.Open("/dev/video0")
+	if nil != err {
+		log.Fatal(err)
+	}
+
+	// Set pixel format
+	if err := dev.SetPixelFormat(
+		1280,
+		720,
+		v4l2.V4L2_PIX_FMT_H264,
+	); nil != err {
+		log.Fatal(err)
+	}
+
+	// Set bitrate
+	if err := dev.SetBitrate(1500000); nil != err {
+		log.Fatal(err)
+	}
+
+	return &source{
+		device: dev,
+		hub:    h,
+	}
+}
+
+func (s *source) run() {
+	// Start stream
+	if err := s.device.Start(); nil != err {
+		log.Fatal(err)
+	}
+	defer s.device.Stop()
+
+	for {
+		select {
+		case b := <-s.device.C:
+			s.hub.nals <- b.Data
+			b.Release()
+		}
+	}
 }
 
 // Handle websocket client connections
@@ -132,7 +198,7 @@ func serveWs(h *hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Instantiate client
-	c := &client{hub: h, conn: conn, frags: make(chan []byte, 30)}
+	c := &client{hub: h, conn: conn, frags: make(chan []byte, 30), n: 1}
 	c.hub.register <- c
 
 	// Go routine writes new MP4 fragment to client websocket
@@ -162,7 +228,6 @@ func serveWs(h *hub, w http.ResponseWriter, r *http.Request) {
 				if err := nw.Close(); nil != err {
 					return
 				}
-			case <-ticker.C:
 			}
 		}
 	}(c)
@@ -181,7 +246,9 @@ func main() {
 	hub := newHub()
 	go hub.run()
 
-	// TODO Open source
+	// Open source
+	src := newSource(hub)
+	go src.run()
 
 	http.HandleFunc("/websocket", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)

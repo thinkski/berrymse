@@ -17,7 +17,7 @@ window.onload = function() {
     let mediaSource = e.target;
 
     // remote pushes media segments via websocket
-    ws = new WebSocket("ws://localhost:8000/websocket");
+    ws = new WebSocket("ws://" + location.hostname + (location.port ? ":"+location.port : "" ) + "/websocket");
     ws.binaryType = "arraybuffer";
 
     // opened websocket to remote. request initial file segment.
