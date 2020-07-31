@@ -5,8 +5,15 @@ window.onload = function() {
   // Check that browser supports Media Source Extensions API
   if (window.MediaSource) {
     let mediaSource = new MediaSource();
+    videoElement.loop = false;
     videoElement.src = URL.createObjectURL(mediaSource);
     mediaSource.addEventListener('sourceopen', sourceOpen);
+    videoElement.onpause = function() {
+      console.log("buffered:", videoElement.buffered);
+      let buffered = videoElement.buffered;
+      videoElement.currentTime = buffered.end(buffered.length-1) - 0.2;
+      videoElement.play();
+    }
   } else {
     console.log("Media Source Extensions API is NOT supported");
   }

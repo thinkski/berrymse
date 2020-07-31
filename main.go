@@ -1,4 +1,4 @@
-// MicroMSE: Low-latency live video via Media Source Extensions (MSE)
+// BerryMSE: Low-latency live video via Media Source Extensions (MSE)
 // Copyright (C) 2020 Chris Hiszpanski
 //
 // This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/markbates/pkger"
 	"github.com/thinkski/go-v4l2"
 )
 
@@ -36,11 +37,14 @@ var (
 
 func init() {
 	flag.StringVar(
-		&flagListen, "l", "localhost:8000", "listen on host:port",
+		&flagListen, "l", "localhost:2020", "listen on host:port",
 	)
 }
 
 const (
+	nalTypeNonIDRCodedSlice = 1
+	nalTypeIDRCodedSlice    = 5
+
 	// Time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
 )
@@ -61,11 +65,11 @@ var upgrader = websocket.Upgrader{
 
 // client structure
 type client struct {
-	hub   *hub
-	conn  *websocket.Conn // Websocket connection
-	frags chan []byte     // Buffered channel of outbound MP4 fragments
-	n     int             // Frame number
-	lock  bool            // Received i-frame?
+	hub     *hub
+	conn    *websocket.Conn // Websocket connection
+	frags   chan []byte     // Buffered channel of outbound MP4 fragments
+	n       int             // Frame number
+	haveIDR bool            // Received i-frame?
 }
 
 // hub maintains a set of active clients and broadcasts video to clients
@@ -108,18 +112,21 @@ func (h *hub) run() {
 
 		// New NAL from source
 		case nal := <-h.nals:
+			nal = bytes.TrimPrefix(nal, []byte{0, 0, 0, 1})
+			if len(nal) == 0 {
+				break
+			}
+			nalType := (nal[0] & 0x1F)
+
 			for c := range h.clients {
-
-				// Convert NAL unit into MP4 fragment
 				var frag bytes.Buffer
-				nal = bytes.TrimPrefix(nal, []byte{0, 0, 0, 1})
 
-				// I-frame or P-frame or B-frame
-				if nal[0]&0x1f < 6 {
-					if nal[0]&0x1f == 5 {
-						c.lock = true
-					}
-					if nal[0]&0x1f == 5 || (nal[0]&0x1f != 5 && c.lock) {
+				switch nalType {
+				case nalTypeIDRCodedSlice:
+					c.haveIDR = true
+					fallthrough
+				case nalTypeNonIDRCodedSlice:
+					if c.haveIDR {
 						writeMOOF(&frag, c.n, nal)
 						writeMDAT(&frag, nal)
 						c.n++
@@ -134,6 +141,8 @@ func (h *hub) run() {
 							delete(h.clients, c)
 						}
 					}
+				default:
+					// noop
 				}
 			}
 		}
@@ -253,7 +262,7 @@ func main() {
 	http.HandleFunc("/websocket", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
-	http.Handle("/", http.FileServer(http.Dir("web/static/")))
+	http.Handle("/", http.FileServer(pkger.Dir("/web/static")))
 
 	// Start server
 	fmt.Printf("Listening on http://%v:%v\n", host, port)

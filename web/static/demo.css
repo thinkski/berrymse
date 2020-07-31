@@ -1,9 +1,29 @@
-body {
+html, body {
   background-color: #fff;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #eee;
+  color: #222;
+  padding: 0.1rem 1rem;
+}
+
+.subtitle {
+  background-color: #444;
+  color: #eee;
+  padding: 10px 1rem;
+  border-bottom: 3px solid #c00;
+}
+
+main {
+  padding: 0 1rem;
 }
 
 video {
-  border: 1px solid black;
-  width: 640px;
-  max-width: 100%;
+  border: 1px solid #000;
+  width: 100%;
+  max-height: 100%;
 }

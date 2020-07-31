@@ -2,35 +2,43 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Media Source Extensions Live Demo</title>
+    <title>🍓 BerryMSE</title>
     <link rel="author" href="//chris.hiszpanski.name" />
     <link rel="license" href="//www.gnu.org/licenses/agpl-3.0.html" />
     <link rel="stylesheet" href="demo.css" />
     <script src="demo.js"></script>
   </head>
   <body>
-    <h1>Low-Latency Live Streaming via Media Source Extensions</h1>
+    <header>
+      <h1>🍓 BerryMSE</h1>
+    </header>
+    <div class="subtitle">
+      Low-latency H.264 from a Raspberry Pi&trade; via Media Source Extensions
+    </div>
 
-    <p>
-      Copyright 2020
-      <a href="//chris.hiszpanski.name">Chris Hiszpanski</a>.
-      All rights reserved.
-    </p>
+    <main>
+      <p>
+        Copyright 2020
+        <a href="//chris.hiszpanski.name">Chris Hiszpanski</a>.
+        All rights reserved.
+      </p>
 
-    <p>
-      This is a demo of low-latency video streaming using the
-      <a href="//w3c.github.io/media-source/">Media Source Extensions
-      API</a>. The API is supported by all major browsers, with the
-      notable exception of Safari on most iOS devices (iPad devices with
-      iOS 13 or newer do support MSE).
-    </p>
-
-    <p>
-      The server receives a H.264 Network Abstraction Layer (NAL) unit
-      byte-stream and wraps the NAL units within MPEG-4 ISO BMFF
-      (ISO/IEC 14496-12) compliant boxes.
-    </p>
-
-    <video autoplay controls muted></video>
+      <video autoplay controls muted></video>
+  
+      <p>
+        This is a demo of low-latency video streaming using the
+        <a href="//w3c.github.io/media-source/">Media Source Extensions
+        API</a>. The API is supported by all major browsers, with the
+        notable exception of Safari on most iOS devices (iPad devices with
+        iOS 13 or newer <b>do</b> support MSE).
+      </p>
+  
+      <p>
+         H.264 NAL units from the Raspberry Pi&trade; camera are encapsulated,
+         in real-time, into MPEG-4 ISO BMFF (ISO/IEC 14496-12) compliant
+         fragments. Each fragment is sent to this client via a WebSocket. The
+         client then appends each fragment to <code>mediaSource</code>.
+      </p>
+    </main>
   </body>
 </html>
