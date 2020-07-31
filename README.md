@@ -1,6 +1,6 @@
-# 🎞️ μMSE
+# 🍓 BerryMSE
 
-Light-weight low-latency live video streaming via the [Media Source Extensions API](//developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API).
+Simple low-latency live video streaming from a Raspberry Pi&trade; via the [Media Source Extensions API](//developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API).
 
 Note: As of March 2020, Safari on iOS devices still does not support this API (excluding iOS 13 on iPad devices, which do support the API).
 
