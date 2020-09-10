@@ -21,7 +21,8 @@ enabled in `/boot/config.txt`.
 
 To fetch dependencies:
 
-    go get -v ./...
+    GOOS=linux go get -v ./...
+    go get github.com/markbates/pkger/cmd/pkger
 
 To build:
 

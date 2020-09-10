@@ -30,7 +30,7 @@ window.onload = function() {
     // The six hexadecimal digit suffix after avc1 is the H.264
     // profile, flags, and level (respectively, one byte each). See
     // ITU-T H.264 specification for details.
-    let mime = 'video/mp4; codecs="avc1.640028, mp4a.40.2"';
+    let mime = 'video/mp4; codecs="avc1.640028"';
     let sourceBuffer = mediaSource.addSourceBuffer(mime);
 
     // received file or media segment
