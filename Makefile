@@ -8,7 +8,7 @@ armv7l: pkged.go
 	mkdir -p armv7l
 	GOARCH=arm GOARM=7 GOOS=linux go build -v -o armv7l/berrymse -ldflags="-w -s"
 
-pkged.go:
+pkged.go: web/**
 	pkger
 
 clean:
